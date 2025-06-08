@@ -123,8 +123,8 @@ class ChatStegGUI:
                 self.append_chat("System", f"Receiver error: {e}")
 
 if __name__ == "__main__":
-    # You can change names, IPs, and ports here for different users
+   
     root = tk.Tk()
-    # Example: ChatStegGUI(root, my_name="Alice", peer_name="Bob", send_ip='localhost', send_port=5001, listen_port=5002)
+   
     gui = ChatStegGUI(root, my_name="Me", peer_name="Peer", send_ip='localhost', send_port=5001, listen_port=5001)
     root.mainloop()
