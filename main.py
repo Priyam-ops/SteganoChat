@@ -119,6 +119,11 @@ class ChatStegGUI:
                         self.append_chat(self.peer_name, "[Received an image, but no hidden message found!]")
                 except Exception as e:
                     self.append_chat("System", f"Failed to reveal message: {e}")
+                finally:
+                    try:
+                        os.remove("received.png")
+                    except Exception as e:
+                        self.append_chat("System", f"Failed to delete received image: {e}")
             except Exception as e:
                 self.append_chat("System", f"Receiver error: {e}")
 
