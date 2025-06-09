@@ -2,7 +2,7 @@ import tkinter as tk
 from tkinter import scrolledtext, messagebox, simpledialog
 from steg import hide_message, reveal_message
 import requests
-from PIL import Image, ImageTk 
+from PIL import Image, ImageTk
 from io import BytesIO
 import os
 import socket
@@ -39,7 +39,7 @@ class RoundedEntry(tk.Canvas):
         width = kwargs.pop('width', 200)
         height = kwargs.pop('height', 44)  # Canvas height
         font = kwargs.pop('font', ("Arial", 13, "bold"))
-        tk.Canvas.__init__(self, parent, highlightthickness=0, bg=parent['bg'])
+        tk.Canvas.__init__(self, parent, highlightthickness=0)
         self.radius = radius
         self.entry = tk.Entry(self, bd=0, relief=tk.FLAT, font=font, fg="#222", bg="white", insertbackground="#222")
         self.create_rounded_rect(0, 0, width, height, radius, fill="white", outline="#cccccc")
@@ -101,42 +101,56 @@ class ChatStegGUI:
 
         master.title(f"SteganoChat - {self.my_name} ({self.send_ip})")
 
+        # === Set background image ===
+        try:
+            self.bg_image = Image.open("background.png")  # Use your image file name here
+            self.bg_image = self.bg_image.resize((master.winfo_screenwidth(), master.winfo_screenheight()), Image.Resampling.LANCZOS)
+            self.bg_photo = ImageTk.PhotoImage(self.bg_image)
+            self.bg_label = tk.Label(master, image=self.bg_photo)
+            self.bg_label.place(x=0, y=0, relwidth=1, relheight=1)
+        except Exception as e:
+            print(f"Background image error: {e}")
+
+        # Create a frame on top of the background for all widgets
+        self.main_frame = tk.Frame(master, highlightthickness=0, bd=0)
+        self.main_frame.place(relx=0, rely=0, relwidth=1, relheight=1)
+
         # Chat display
         self.chat_display = scrolledtext.ScrolledText(
-            master, state='disabled', width=60, height=20,
-            font=("Arial", 13, "bold"), fg="#222", bg="#f8f8f8", insertbackground="#222"
+            self.main_frame, state='disabled', width=60, height=20,
+            font=("Arial", 13, "bold"), fg="#222", bg="#f7f7f7", insertbackground="#222", borderwidth=0, highlightthickness=0
         )
-        self.chat_display.pack(side=tk.TOP, padx=10, pady=10, fill=tk.BOTH, expand=True)
+        self.chat_display.pack(side=tk.TOP, padx=30, pady=30, fill=tk.BOTH, expand=True)
 
         # Bottom frame for entry, send button, and IP info
-        bottom_frame = tk.Frame(master, bg="#f8f8f8")
-        bottom_frame.pack(side=tk.BOTTOM, fill=tk.X, padx=10, pady=(0, 10))
+        bottom_frame = tk.Frame(self.main_frame, highlightthickness=0, bd=0)
+        bottom_frame.pack(side=tk.BOTTOM, fill=tk.X, padx=30, pady=(0, 30))
 
         # Sender IP label (bottom left)
         self.sender_ip_label = tk.Label(
             bottom_frame, text=f"Your IP: {self.send_ip}",
-            font=("Arial", 11, "bold"), anchor='w', fg="#444", bg="#f8f8f8"
+            font=("Arial", 11, "bold"), anchor='w', fg="#444"
         )
         self.sender_ip_label.pack(side=tk.LEFT, padx=(0, 10))
 
         # Receiver IP entry (rounded)
-        self.receiver_ip_entry = RoundedEntry(bottom_frame, width=180, height=32, font=("Arial", 12))
+        self.receiver_ip_entry = RoundedEntry(bottom_frame, width=180, height=44, font=("Arial", 12))
         self.receiver_ip_entry.insert(0, "Receiver IP (e.g. 192.168.1.XX)")
         self.receiver_ip_entry.pack(side=tk.LEFT, padx=(0, 10))
         self.receiver_ip_entry.bind("<FocusIn>", lambda event: self._clear_placeholder())
 
         # Message entry (rounded)
-        self.message_entry = RoundedEntry(bottom_frame, width=260, height=32, font=("Arial", 12))
+        self.message_entry = RoundedEntry(bottom_frame, width=260, height=44, font=("Arial", 12))
         self.message_entry.pack(side=tk.LEFT, fill=tk.X, expand=True)
         self.message_entry.bind("<Return>", lambda event: self.send_message())
         self.message_entry.focus_set()  # Set focus here
 
         # Send button
         try:
-            send_img = Image.open("send_icon.png")  # Place your icon as send_icon.png in the same folder
+            send_img = Image.open("send_icon.png")
             send_img = send_img.resize((32, 32), Image.Resampling.LANCZOS)
             self.send_icon = ImageTk.PhotoImage(send_img)
-            self.send_btn = tk.Button(bottom_frame, image=self.send_icon, command=self.send_message, bd=0, bg="#f0f0f0", activebackground="#e0e0e0")
+            self.send_btn = tk.Button(bottom_frame, image=self.send_icon, command=self.send_message, bd=0)
         except Exception:
             self.send_btn = tk.Button(bottom_frame, text="Send", width=10, command=self.send_message, font=("Arial", 12, "bold"))
         self.send_btn.pack(side=tk.LEFT, padx=(10, 0))
@@ -164,7 +178,7 @@ class ChatStegGUI:
             self.append_chat("System", "Please enter the receiver's IP address.")
             self.receiver_ip_entry.focus_set()
             return
-        self.send_ip = receiver_ip  
+        self.send_ip = receiver_ip
 
         self.append_chat(self.my_name, message)
         self.message_entry.entry_delete(0, tk.END)
