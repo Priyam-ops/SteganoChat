@@ -71,16 +71,16 @@ class RoundedEntry(tk.Canvas):
     def get(self):
         return self.entry.get()
 
-    def insert(self, index, string):
+    def insert(self, index, string): # type: ignore
         return self.entry.insert(index, string)
 
-    def delete(self, first, last=None):
+    def delete(self, first, last=None): # type: ignore
         return self.entry.delete(first, last)
 
     def entry_delete(self, first, last=None):
         return self.entry.delete(first, last)
 
-    def bind(self, sequence=None, func=None, add=None):
+    def bind(self, sequence=None, func=None, add=None): # type: ignore
         tk.Canvas.bind(self, sequence, func, add)
         self.entry.bind(sequence, func, add)
 
